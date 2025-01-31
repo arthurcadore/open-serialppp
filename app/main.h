@@ -4,9 +4,6 @@
 #include <iostream>
 #include <cstring>
 #include "serial.h"
-#include "poller.h"
-#include "aplicacao.h"
-#include "enquadramento.h"
 
 void tx (Serial & rf, char * msg);
 void rx (Serial & rf);
