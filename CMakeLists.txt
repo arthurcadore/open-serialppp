@@ -18,6 +18,8 @@ add_executable(serialpp.out
                libs/crc16.h
                libs/serial.h
                libs/serial.cpp
+               libs/poller.h
+               libs/poller.cpp
 ) 
 
 add_custom_target(run

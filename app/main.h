@@ -2,7 +2,9 @@
 #define	__MAIN_H__
 
 #include <iostream>
-#include "framing.h"
+#include "../libs/poller.h"
+#include "application.h"
+
 
 int main (int argc, char * argv[]);
 
