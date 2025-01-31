@@ -11,19 +11,23 @@ Each character in the message that will be escaped will be XORed with 0x20, so t
 
 std::vector<uint8_t> Framing::serialize( std::string message ) {
 
+    // calculate the CRC16 for the message
+    std::string messageWithCRC = calculateCRC(message);
+
     packet.clear();
     packet.push_back(FRAME_DELEMITER); // Start of frame
 
-    for (int i = 0; i < message.length(); i++) {
-        if (message[i] == FRAME_DELEMITER) {
+
+    for (int i = 0; i < messageWithCRC.length(); i++) {
+        if (messageWithCRC[i] == FRAME_DELEMITER) {
             packet.push_back(ESCAPE_CHARACTER);
             packet.push_back(0x5E);
-        } else if (message[i] == ESCAPE_CHARACTER) {
+        } else if (messageWithCRC[i] == ESCAPE_CHARACTER) {
             packet.push_back(ESCAPE_CHARACTER);
             packet.push_back(0x5D);
         }
         else {
-            packet.push_back(message[i]);
+            packet.push_back(messageWithCRC[i]);
         }
     }
 
@@ -68,6 +72,9 @@ std::string Framing::deserialize(std::vector<uint8_t> packet){
         i++;
     }
 
+    // remove the CRC from the message
+    message = removeCRC(message);
+
     return message;
 }
 
@@ -77,4 +84,30 @@ std::string Framing::packetToString() {
         packetString.push_back(packet[i]);
     }
     return packetString;
+}
+
+std::string Framing::calculateCRC(std::string message) {
+    auto crc = make_crc16(message);
+    
+    // generate the CRC16 for the packet
+    crc.generate_into(message);
+
+    return message;
+}
+
+std::string Framing::removeCRC(std::string message) {
+
+    auto crc = make_crc16(message);
+    
+    // check the CRC of the message, if it is correct remove the CRC from the message
+    // if not, return an error
+
+    if (crc.check()) {
+        message.pop_back();
+        message.pop_back();
+    } else {
+        throw std::runtime_error("CRC16 check failed");
+    }
+
+    return message;
 }

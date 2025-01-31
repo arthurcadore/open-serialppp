@@ -3,7 +3,9 @@
 
 #include <iostream>
 #include <cstring>
-#include "serial.h"
+#include <vector>
+#include <cstdint>
+#include "../libs/crc16.h"
 
 // define the characters that will be used for framing
 #define FRAME_DELEMITER 0x7E
@@ -15,6 +17,10 @@ class Framing {
     std::vector<uint8_t> packet;
     std::string message;
     int packetSize;
+
+    std::string calculateCRC(std::string message);
+
+    std::string removeCRC(std::string message); 
 
     public:
     // Constructor
