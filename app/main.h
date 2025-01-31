@@ -4,9 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include "serial.h"
-
-void tx (Serial & rf, char * msg);
-void rx (Serial & rf);
+#include "framing.h"
 
 int main (int argc, char * argv[]);
 

@@ -27,6 +27,8 @@ class Framing {
 
     std::string deserialize( std::vector<uint8_t> packet );
 
+    std::string packetToString();
+
     int getPacketSize( std::vector<uint8_t> packet );
 };
 

@@ -13,7 +13,8 @@ add_executable(serialpp.out
                app/main.h 
                app/serial.cpp
                app/serial.h
-
+               app/framing.cpp
+               app/framing.h
 ) 
 
 add_custom_target(run

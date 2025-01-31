@@ -1,6 +1,5 @@
 #include "framing.h"
 
-
 /*
 Flags: 
 
@@ -70,4 +69,12 @@ std::string Framing::deserialize(std::vector<uint8_t> packet){
     }
 
     return message;
+}
+
+std::string Framing::packetToString() {
+    std::string packetString;
+    for (int i = 0; i < packet.size(); i++) {
+        packetString.push_back(packet[i]);
+    }
+    return packetString;
 }
