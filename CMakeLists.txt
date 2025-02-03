@@ -20,6 +20,8 @@ add_executable(serialpp.out
                libs/serial.cpp
                libs/poller.h
                libs/poller.cpp
+               libs/callback.cpp
+               libs/callback.h
 ) 
 
 add_custom_target(run
