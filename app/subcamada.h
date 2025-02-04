@@ -9,11 +9,10 @@ using std::vector;
 class Subcamada: public Callback {
 public:
     Subcamada(int fd, long tout);
-    virtual void handle() = 0;
     ~Subcamada();
     void conecta(Subcamada * acima);
-    virtual void envia(const vector<char> & quadro) = 0;
-    virtual void recebe(const vector<char> & quadro) = 0;
+    virtual void envia(const vector<char> & quadro);
+    virtual void recebe(const vector<char> & quadro);
 protected:
     Subcamada * superior, * inferior;
 };

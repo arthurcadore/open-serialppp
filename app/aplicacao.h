@@ -10,23 +10,19 @@ using std::cout;
 using std::string;
 
 class Aplicacao: public Subcamada {
-  private:
-    Subcamada* lower; // Declare as a member variable
  public:   
     // construtor 
-    Aplicacao() : Subcamada(0, 1000), lower(nullptr) {}
+    Aplicacao(): Subcamada(0) {
+    }
     
-    void handle() override {
+    void handle() {
       // lê uma linha do teclado
       string dados;
       
       getline(cin, dados);
       
       // envia para a subcamada inferior (lower)
-      if (lower) {
-        std::vector<char> quadro(dados.begin(), dados.end());
-        lower->envia(quadro);
-      }    
+      lower->envia(dados.c_str(), dados.size());
     }
     
     void handle_timeout();
