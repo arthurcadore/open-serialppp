@@ -10,3 +10,19 @@ void Subcamada::conecta(Subcamada *acima) {
     superior = acima;
     acima->inferior = this;
 }
+
+void Subcamada::envia(const vector<char>& quadro) override {
+    // Implementation for sending data
+    if (lower) {
+        lower->envia(quadro);
+    }
+}
+
+void Subcamada::recebe(const vector<char>& quadro) override {
+    // Implementation for receiving data
+    cout << "Received data: ";
+    for (char c : quadro) {
+        cout << c;
+    }
+    cout << endl;
+}
