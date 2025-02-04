@@ -13,9 +13,9 @@
 void dump(const std::vector<uint8_t> & buffer, std::ostream & out);
 
 // Class for reading from the keyboard and writing to the screen
-class KeyboardRead : public Callback {
+class TxCallback : public Callback {
 public:
-    KeyboardRead(): Callback(0,0) {
+    TxCallback(): Callback(0,0) {
         disable_timeout();
     }
 
@@ -28,6 +28,25 @@ public:
         }
 
         std::cout << "You entered: " << newLine << std::endl;
+
+        // Frame the message
+
+
+    }
+
+    void handle_timeout() {}
+};
+
+// Class for reading from the serial port and writing to the screen
+class RxCallback : public Callback {
+public:
+    RxCallback(): Callback(0,0) {
+        disable_timeout();
+    }
+
+    void handle() {
+        std::vector<uint8_t> buffer = io.rx();
+        dump(buffer, std::cout);
     }
 
     void handle_timeout() {}

@@ -5,14 +5,11 @@
 #include <cstring>
 #include "../libs/serial.h"
 
-void tx (Serial & rf, char * msg);
-void rx (Serial & rf);
-
 enum baudrate {
     B_9600 = 9600
 };
 
-class io {
+class Io {
     private: 
         Serial Tx;
         Serial Rx;
@@ -21,26 +18,20 @@ class io {
         std::vector<uint8_t> charToUint8_t (std::vector<char> buffer);
 
     public:
-
-        io (char * TxPort, char * RxPort, int baudrate) {
-            // check the baudrate
+        Io (char * TxPort, char * RxPort, int baudrate) {
+            // Verifique o baudrate
             if (baudrate != B_9600) {
                 throw std::runtime_error("Baudrate not supported");
             }
-                Tx = Serial(TxPort, B9600);
-                Rx = Serial(RxPort, B9600);
+            Tx = Serial(TxPort, B9600);
+            Rx = Serial(RxPort, B9600);
         }
 
-        /*
-            Transmit a buffer of uint8_t over the serial interface
-        */
-        void tx (vector<uint8_t> buffer);
+        // Transmite um buffer de uint8_t pela interface serial
+        void tx (std::vector<uint8_t> buffer);
 
-        /*
-            Receive a buffer of uint8_t from the serial interface
-        */
+        // Recebe um buffer de uint8_t da interface serial
         std::vector<uint8_t> rx ();
 };
 
-
-#endif
+#endif // IO_H
