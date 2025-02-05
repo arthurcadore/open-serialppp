@@ -11,9 +11,17 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 add_executable(serialpp.out
                app/main.cpp 
                app/main.h 
-               app/serial.cpp
-               app/serial.h
-
+               app/framing.cpp
+               app/framing.h
+               libs/crc16.h
+               libs/serial.h
+               libs/serial.cpp
+               libs/poller.h
+               libs/poller.cpp
+               libs/callback.cpp
+               libs/callback.h
+               app/Subcamada.h
+               app/Subcamada.cpp
 ) 
 
 add_custom_target(run

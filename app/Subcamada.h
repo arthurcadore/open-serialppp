@@ -1,8 +1,8 @@
 #ifndef SUBCAMADA_H
-#define	SUBCAMADA_H
+#define SUBCAMADA_H
 
 #include <vector>
-#include "callback.h"
+#include "../libs/callback.h"
 
 using std::vector;
 
@@ -11,11 +11,10 @@ public:
     Subcamada(int fd, long tout);
     ~Subcamada();
     void conecta(Subcamada * acima);
-    virtual void envia(const vector<char> & quadro);
-    virtual void recebe(const vector<char> & quadro);
+    virtual void envia(const vector<char> & quadro) = 0;
+    virtual void recebe(const vector<char> & quadro) = 0;
 protected:
     Subcamada * superior, * inferior;
 };
 
-
-#endif //ENQ_V0_SUBCAMADA_H
+#endif // SUBCAMADA_H

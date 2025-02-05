@@ -1,24 +1,32 @@
-#include "main.h"
+#include "application.h"
+#include "framing.h"
+#include "../libs/poller.h"
 
-using namespace std;
+int main(int argc, char *argv[]) {
+    // Verifica se o nome da porta serial foi fornecido
+    if (argc < 2) {
+        std::cerr << "Uso: " << argv[0] << " <porta_serial>" << std::endl;
+        return 1;
+    }
 
+    Serial porta(argv[1], B9600);
 
-int main (int argc, char * argv[]) {
-    
-  Serial serial(argv[1], B9600);
+    // Instancia a subcamada do enquadramento
+    Framing framing(porta, 0); // FD e timeout não são usados aqui
 
-  class ConcreteAplicacao : public Aplicacao {
-    // Implement all pure virtual functions here
-  };
+    // Instancia a subcamada da aplicação
+    Application application(0, 0); // FD e timeout não são usados aqui
 
-  ConcreteAplicacao app;
-  Enquadramento enq(serial, 9600)
-  
-  enq.conecta($app);
+    // Conecta as subcamadas: aplicação acima de enquadramento, enquadramento acima de IO
+    framing.conecta(&application);
 
-  Poller sched;
-  sched.adiciona(&enq);
-  sched.adiciona(&app);
+    // Cria o poller e registra as subcamadas
+    Poller sched;
+    sched.adiciona(&application);
+    sched.adiciona(&framing);
 
-  sched.despache();
+    // Executa o protocolo (loop principal)
+    sched.despache();
+
+    return 0;
 }
