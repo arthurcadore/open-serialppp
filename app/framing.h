@@ -19,6 +19,8 @@ class Framing : public Subcamada
 {
 private: 
     Serial & serial;
+    vector<char> buffer;
+    int delimiter = 0;
 
 public:
     // Construtor
@@ -39,20 +41,27 @@ public:
         // Lê dados da porta serial
         char receivedData = serial.read_byte();
 
-        // Exibe os dados recebidos da porta serial
-        std::cout << "IO received: ";
+        // adiciona ao buffer
+        buffer.push_back(receivedData);
 
-        std::cout << receivedData << std::endl;
+        // verifica se é um escape, se for, incrementa o contador
+        if (receivedData == FRAME_DELEMITER)
+        {
+            delimiter++;
+        }
 
+        // verifica se há um quadro completo
+        if (delimiter % 2 == 0)
+        {
+            // desenquadra o quadro usando metodo recebe, depois envia para a camada de cima. 
+            recebe(buffer);
 
-        // desenquadra o quadro usando metodo recebe, depois envia para a camada de cima. 
-        // recebe(receivedData);
+            // limpa o buffer
+            buffer.clear();
 
-        // // Envia os dados recebidos para a camada superior (Applicaçao)
-        // if (superior)
-        // {
-        //     superior->recebe(receivedData);
-        // }
+            // reseta o contador
+            delimiter = 0;
+        }
     }
 
 private:

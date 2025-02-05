@@ -34,28 +34,15 @@ void Framing::envia(const vector<char>& quadro) {
 
     framedPacket.push_back(FRAME_DELEMITER); // Fim do quadro
 
-    // imprime os dados do quadro para debug
-    std::cout << "Framing sending: ";
-    for (char c : framedPacket) {
-        std::cout << c;
-    }
-
-    serial.write(quadro);
+    serial.write(framedPacket);
 }
 
 void Framing::recebe(const vector<char>& quadro) {
 
-    // imprime os dados do quadro para debug
-    std::cout << "\n" <<"Framing received: ";
-    for (char c : quadro) {
-        std::cout << c;
-    }
-
     vector<char> receivedPacket;
 
-
     // Desserializa o quadro, desfazendo o escape dos caracteres
-    for (size_t i = 0; i < quadro.size(); i++) {
+    for (size_t i = 1; i < quadro.size(); i++) {
         if (quadro[i] == ESCAPE_CHARACTER) {
             i++; // Pula o caractere de escape
             if (i >= quadro.size()) {

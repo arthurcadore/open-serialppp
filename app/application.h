@@ -39,7 +39,6 @@ public:
         // imprime os dados que estão sendo enviados
         std::cout << "Application sending: " << input << "\n" << std::endl;
 
-
         if (input == "exit") {
             exit(0); // Encerra o programa se o usuário digitar "exit"
         }
