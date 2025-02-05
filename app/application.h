@@ -10,7 +10,10 @@
 class Application : public Subcamada {
 public:
     // Construtor
-    Application(int fd, long tout) : Subcamada(fd, tout) {}
+    Application(int fd, long tout) : Subcamada(fd, tout) {
+        // Imprime o primeiro prompt
+        std::cout << "SerialPPP: ";
+    }
     
 
     // Método para enviar dados (implementação da Subcamada)
@@ -24,7 +27,7 @@ public:
     // Método para receber dados (implementação da Subcamada)
     void recebe(const std::vector<char>& quadro) override {
         // Exibe os dados recebidos da camada inferior (Framing)
-        std::cout << "Application received: ";
+        std::cout << "SerialPPP Recebeu: ";
         for (char c : quadro) {
             std::cout << c;
         }
@@ -36,15 +39,15 @@ public:
         std::string input;
         std::getline(std::cin, input);
 
-        // imprime os dados que estão sendo enviados
-        std::cout << "Application sending: " << input << "\n" << std::endl;
-
         if (input == "exit") {
             exit(0); // Encerra o programa se o usuário digitar "exit"
         }
 
         // Converte a string para um vetor de char
         std::vector<char> quadro(input.begin(), input.end());
+
+        // Imprime o proximo prompt
+        std::cout << "SerialPPP: ";
 
         // Envia os dados para a camada inferior (Framing)
         if (inferior) {
