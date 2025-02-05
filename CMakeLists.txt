@@ -22,6 +22,8 @@ add_executable(serialpp.out
                libs/poller.cpp
                libs/callback.cpp
                libs/callback.h
+               app/Subcamada.h
+               app/Subcamada.cpp
 ) 
 
 add_custom_target(run

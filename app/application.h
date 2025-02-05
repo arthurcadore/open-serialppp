@@ -1,55 +1,55 @@
-#ifndef IO_H
-#define IO_H
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
 #include <iostream>
-#include <cstring>
 #include <vector>
-#include <iomanip>  
-#include <cstdint>
+#include <stdexcept>
+#include "Subcamada.h"
 
-#include "../libs/callback.h"
-
-// Function to dump the buffer to the output stream
-void dump(const std::vector<uint8_t> & buffer, std::ostream & out);
-
-// Class for reading from the keyboard and writing to the screen
-class TxCallback : public Callback {
+// Classe para a camada Application
+class Application : public Subcamada {
 public:
-    TxCallback(): Callback(0,0) {
-        disable_timeout();
+    // Construtor
+    Application(int fd, long tout) : Subcamada(fd, tout) {}
+
+    // Método para enviar dados (implementação da Subcamada)
+    void envia(const std::vector<char>& quadro) override {
+        // Exibe os dados recebidos da camada inferior (Framing)
+        std::cout << "Application received: ";
+        for (char c : quadro) {
+            std::cout << c;
+        }
+        std::cout << std::endl;
     }
 
-    void handle() {
-        std::string newLine;
-        std::getline(std::cin, newLine);
+    // Método para receber dados (implementação da Subcamada)
+    void recebe(const std::vector<char>& quadro) override {
+        // Envia os dados para a camada inferior (Framing)
+        if (inferior) {
+            inferior->envia(quadro);
+        }
+    }
 
-        if (newLine == "exit") {
-            exit(0);
+    // Método para ler dados do terminal e enviar para a camada inferior
+    void handle() override {
+        std::string input;
+        std::getline(std::cin, input);
+
+        if (input == "exit") {
+            exit(0); // Encerra o programa se o usuário digitar "exit"
         }
 
-        std::cout << "You entered: " << newLine << std::endl;
+        // Converte a string para um vetor de char
+        std::vector<char> quadro(input.begin(), input.end());
 
-        // Frame the message
-
-
+        // Envia os dados para a camada inferior (Framing)
+        if (inferior) {
+            inferior->envia(quadro);
+        }
     }
 
-    void handle_timeout() {}
+    // Método chamado em caso de timeout (não utilizado aqui)
+    void handle_timeout() override {}
 };
 
-// Class for reading from the serial port and writing to the screen
-class RxCallback : public Callback {
-public:
-    RxCallback(): Callback(0,0) {
-        disable_timeout();
-    }
-
-    void handle() {
-        std::vector<uint8_t> buffer = io.rx();
-        dump(buffer, std::cout);
-    }
-
-    void handle_timeout() {}
-};
-
-#endif
+#endif // APPLICATION_H

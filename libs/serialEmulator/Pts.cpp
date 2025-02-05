@@ -70,4 +70,3 @@ int Pts::setup_pty() {
 //  tcflush(fd, TCIFLUSH);
 //  if (tcsetattr(fd,TCSANOW,&newtio) < 0) throw PtsException(strerror(errno));
 }
-

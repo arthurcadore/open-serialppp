@@ -1,37 +1,42 @@
 #ifndef IO_H
 #define IO_H
 
-#include <iostream>
-#include <cstring>
+#include <vector>
+#include <stdexcept>
+#include "Subcamada.h"
 #include "../libs/serial.h"
 
-enum baudrate {
-    B_9600 = 9600
-};
+// Classe para a camada IO
+class Io : public Subcamada
+{
+private:
+    Serial serial;
 
-class Io {
-    private: 
-        Serial Tx;
-        Serial Rx;
+public:
+    // Construtor
+    Io(const char *port, int baudrate) : Subcamada(0, 0), serial(port, baudrate) {}
 
-        std::vector<char> uint8_tToChar (std::vector<uint8_t> buffer);
-        std::vector<uint8_t> charToUint8_t (std::vector<char> buffer);
+    // Método para enviar dados (implementação da Subcamada)
+    void envia(const std::vector<char> &quadro) override;
 
-    public:
-        Io (char * TxPort, char * RxPort, int baudrate) {
-            // Verifique o baudrate
-            if (baudrate != B_9600) {
-                throw std::runtime_error("Baudrate not supported");
-            }
-            Tx = Serial(TxPort, B9600);
-            Rx = Serial(RxPort, B9600);
+    // Método para receber dados (implementação da Subcamada)
+    void recebe(const std::vector<char> &quadro) override;
+
+    // Método para ler dados da porta serial
+    void handle()
+    {
+        // Lê dados da porta serial
+        vector<char> receivedData = serial.read(32);
+
+        // Envia os dados recebidos para a camada superior (Framing)
+        if (superior)
+        {
+            superior->recebe(receivedData);
         }
+    }
 
-        // Transmite um buffer de uint8_t pela interface serial
-        void tx (std::vector<uint8_t> buffer);
-
-        // Recebe um buffer de uint8_t da interface serial
-        std::vector<uint8_t> rx ();
+    // Método chamado em caso de timeout (não utilizado aqui)
+    void handle_timeout() override {}
 };
 
 #endif // IO_H
