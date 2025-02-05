@@ -11,9 +11,18 @@ class Application : public Subcamada {
 public:
     // Construtor
     Application(int fd, long tout) : Subcamada(fd, tout) {}
+    
 
     // Método para enviar dados (implementação da Subcamada)
     void envia(const std::vector<char>& quadro) override {
+        // Envia os dados para a camada inferior (Framing)
+        if (inferior) {
+            inferior->envia(quadro);
+        }
+    }
+
+    // Método para receber dados (implementação da Subcamada)
+    void recebe(const std::vector<char>& quadro) override {
         // Exibe os dados recebidos da camada inferior (Framing)
         std::cout << "Application received: ";
         for (char c : quadro) {
@@ -22,18 +31,14 @@ public:
         std::cout << std::endl;
     }
 
-    // Método para receber dados (implementação da Subcamada)
-    void recebe(const std::vector<char>& quadro) override {
-        // Envia os dados para a camada inferior (Framing)
-        if (inferior) {
-            inferior->envia(quadro);
-        }
-    }
-
     // Método para ler dados do terminal e enviar para a camada inferior
     void handle() override {
         std::string input;
         std::getline(std::cin, input);
+
+        // imprime os dados recebidos
+        std::cout << "Application received: " << input << "\n" << std::endl;
+
 
         if (input == "exit") {
             exit(0); // Encerra o programa se o usuário digitar "exit"

@@ -4,7 +4,11 @@
 #include <vector>
 #include <stdexcept>
 #include "Subcamada.h"
+#include <iomanip>  
+#include <cstdint>
+#include <iostream>
 #include "../libs/crc16.h"
+#include "../libs/serial.h"
 
 // Define os caracteres usados para o framing
 #define FRAME_DELEMITER 0x7E
@@ -13,9 +17,11 @@
 // Classe para a camada Framing
 class Framing : public Subcamada
 {
+private: 
+    Serial serial;
 public:
     // Construtor
-    Framing(int fd, long tout) : Subcamada(fd, tout) {}
+    Framing(const char * port, int boundrate, int fd, long tout) : Subcamada(fd, tout), serial(port, boundrate) {}
 
     // Método para enviar dados (implementação da Subcamada)
     void envia(const std::vector<char> &quadro) override;
@@ -29,17 +35,23 @@ public:
     // Método chamado em caso de dados recebidos
     void handle()
     {
-        // Se receber do IO desenquadra e envia para a camada superior
-        vector<char> quadro;
-        if (inferior)
+        // Lê dados da porta serial
+        vector<char> receivedData = serial.read(32);
+
+        // Exibe os dados recebidos da porta serial
+        std::cout << "IO received: ";
+        for (char c : receivedData)
         {
-            inferior->recebe(quadro);
+            std::cout << c;
         }
 
-        // Se receber da camada superior enquadra e envia para o IO
+        // desenquadra o quadro usando metodo recebe, depois envia para a camada de cima. 
+        recebe(receivedData);
+
+        // Envia os dados recebidos para a camada superior (Applicaçao)
         if (superior)
         {
-            superior->envia(quadro);
+            superior->recebe(receivedData);
         }
     }
 

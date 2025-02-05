@@ -13,8 +13,6 @@ add_executable(serialpp.out
                app/main.h 
                app/framing.cpp
                app/framing.h
-               app/io.cpp
-               app/io.h
                libs/crc16.h
                libs/serial.h
                libs/serial.cpp

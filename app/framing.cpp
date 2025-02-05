@@ -1,6 +1,16 @@
 #include "framing.h"
 
-using namespace std;
+void dump(const std::vector<uint8_t> & buffer, std::ostream & out) {
+    int n = 0;
+
+    out << std::hex << std::setprecision(2);
+    for (auto & c: buffer) {
+        int x = (unsigned char)c;
+        out << x << " ";
+        n++;
+        if ((n % 20) == 0) out << std::endl;
+    }
+}
 
 void Framing::envia(const vector<char>& quadro) {
     // Calcula o CRC16 e anexa à mensagem
@@ -24,21 +34,32 @@ void Framing::envia(const vector<char>& quadro) {
 
     framedPacket.push_back(FRAME_DELEMITER); // Fim do quadro
 
-    // Envia o quadro para a camada inferior (IO)
-    if (inferior) {
-        inferior->envia(framedPacket);
+    // imprime os dados do quadro para debug
+    std::cout << "Framing sending: ";
+    for (char c : framedPacket) {
+        std::cout << c;
     }
+
+    serial.write(quadro);
 }
 
 void Framing::recebe(const vector<char>& quadro) {
+
+    // imprime os dados do quadro para debug
+    std::cout << "\n" <<"Framing received: ";
+    for (char c : quadro) {
+        std::cout << c;
+    }
+
     vector<char> receivedPacket;
+
 
     // Desserializa o quadro, desfazendo o escape dos caracteres
     for (size_t i = 0; i < quadro.size(); i++) {
         if (quadro[i] == ESCAPE_CHARACTER) {
             i++; // Pula o caractere de escape
             if (i >= quadro.size()) {
-                throw runtime_error("Invalid escape sequence");
+                throw std::runtime_error("Invalid escape sequence");
             }
 
             if (quadro[i] == 0x5E) {
@@ -46,7 +67,7 @@ void Framing::recebe(const vector<char>& quadro) {
             } else if (quadro[i] == 0x5D) {
                 receivedPacket.push_back(ESCAPE_CHARACTER);
             } else {
-                throw runtime_error("Invalid escape sequence");
+                throw std::runtime_error("Invalid escape sequence");
             }
         } else {
             receivedPacket.push_back(quadro[i]);
@@ -73,7 +94,7 @@ vector<char> Framing::calculateCRC(const vector<char>& quadro) {
 vector<char> Framing::removeCRC(const vector<char>& quadro) {
     // Implementação da remoção e verificação do CRC16 (exemplo simplificado)
     if (quadro.size() < 2) {
-        throw runtime_error("Invalid frame: too short");
+        throw std::runtime_error("Invalid frame: too short");
     }
 
     vector<char> quadroSemCRC(quadro.begin(), quadro.end() - 2);

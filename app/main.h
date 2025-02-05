@@ -4,7 +4,6 @@
 #include <iostream>
 #include "../libs/poller.h"
 #include "application.h"
-#include "io.h"
 
 
 int main (int argc, char * argv[]);

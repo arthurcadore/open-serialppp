@@ -1,4 +1,6 @@
 #include "application.h"
+#include <iomanip>  
+#include <cstdint>
 
 void dump(const std::vector<uint8_t> & buffer, std::ostream & out) {
     int n = 0;

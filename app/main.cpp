@@ -1,6 +1,5 @@
 #include "application.h"
 #include "framing.h"
-#include "io.h"
 #include "../libs/poller.h"
 
 int main(int argc, char *argv[]) {
@@ -10,24 +9,19 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // Cria a porta serial, cujo nome é informado via argv[1]
-    Io io(argv[1], 9600); // Substitua B_9600 pela taxa de transmissão desejada
-
     // Instancia a subcamada do enquadramento
-    Framing framing(0, 0); // FD e timeout não são usados aqui
+    Framing framing(argv[1], 9600, 0, 0); // FD e timeout não são usados aqui
 
     // Instancia a subcamada da aplicação
     Application application(0, 0); // FD e timeout não são usados aqui
 
     // Conecta as subcamadas: aplicação acima de enquadramento, enquadramento acima de IO
-    application.conecta(&framing);
-    framing.conecta(&io);
+    framing.conecta(&application);
 
     // Cria o poller e registra as subcamadas
     Poller sched;
     sched.adiciona(&application);
-    sched.adiciona(&framing);
-    sched.adiciona(&io);
+    // sched.adiciona(&framing);
 
     // Executa o protocolo (loop principal)
     sched.despache();
