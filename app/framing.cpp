@@ -40,7 +40,7 @@ void Framing::envia(const vector<char>& quadro) {
         std::cout << c;
     }
 
-    serial.write(quadro);
+    serialTx.write(quadro);
 }
 
 void Framing::recebe(const vector<char>& quadro) {

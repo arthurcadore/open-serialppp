@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Instancia a subcamada do enquadramento
-    Framing framing(argv[1], 9600, 0, 0); // FD e timeout não são usados aqui
+    Framing framing(argv[1], argv[2], 9600, 0, 0); // FD e timeout não são usados aqui
 
     // Instancia a subcamada da aplicação
     Application application(0, 0); // FD e timeout não são usados aqui
