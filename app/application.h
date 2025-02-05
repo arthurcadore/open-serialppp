@@ -36,8 +36,8 @@ public:
         std::string input;
         std::getline(std::cin, input);
 
-        // imprime os dados recebidos
-        std::cout << "Application received: " << input << "\n" << std::endl;
+        // imprime os dados que estão sendo enviados
+        std::cout << "Application sending: " << input << "\n" << std::endl;
 
 
         if (input == "exit") {

@@ -9,8 +9,10 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    Serial porta(argv[1], B9600);
+
     // Instancia a subcamada do enquadramento
-    Framing framing(argv[1], argv[2], 9600, 0, 0); // FD e timeout não são usados aqui
+    Framing framing(porta, 0); // FD e timeout não são usados aqui
 
     // Instancia a subcamada da aplicação
     Application application(0, 0); // FD e timeout não são usados aqui
@@ -21,7 +23,7 @@ int main(int argc, char *argv[]) {
     // Cria o poller e registra as subcamadas
     Poller sched;
     sched.adiciona(&application);
-    // sched.adiciona(&framing);
+    sched.adiciona(&framing);
 
     // Executa o protocolo (loop principal)
     sched.despache();

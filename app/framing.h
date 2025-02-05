@@ -18,12 +18,11 @@
 class Framing : public Subcamada
 {
 private: 
-    Serial serialTx;
-    Serial serialRx;
+    Serial & serial;
 
 public:
     // Construtor
-    Framing(const char * portTx, const char * portRx, int boundrate, int fd, long tout) : Subcamada(fd, tout), serialTx(portTx, boundrate), serialRx(portRx, boundrate){}
+    Framing(Serial & porta, long tout) : Subcamada(porta.get(), tout), serial(porta){}
 
     // Método para enviar dados (implementação da Subcamada)
     void envia(const std::vector<char> &quadro) override;
@@ -38,23 +37,22 @@ public:
     void handle()
     {
         // Lê dados da porta serial
-        vector<char> receivedData = serialRx.read(32);
+        char receivedData = serial.read_byte();
 
         // Exibe os dados recebidos da porta serial
         std::cout << "IO received: ";
-        for (char c : receivedData)
-        {
-            std::cout << c;
-        }
+
+        std::cout << receivedData << std::endl;
+
 
         // desenquadra o quadro usando metodo recebe, depois envia para a camada de cima. 
-        recebe(receivedData);
+        // recebe(receivedData);
 
-        // Envia os dados recebidos para a camada superior (Applicaçao)
-        if (superior)
-        {
-            superior->recebe(receivedData);
-        }
+        // // Envia os dados recebidos para a camada superior (Applicaçao)
+        // if (superior)
+        // {
+        //     superior->recebe(receivedData);
+        // }
     }
 
 private:
