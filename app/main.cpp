@@ -2,9 +2,11 @@
 #include "framing.h"
 #include "../libs/poller.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     // Verifica se o nome da porta serial foi fornecido
-    if (argc < 2) {
+    if (argc < 2)
+    {
         std::cerr << "Uso: " << argv[0] << " <porta_serial>" << std::endl;
         return 1;
     }
@@ -17,6 +19,9 @@ int main(int argc, char *argv[]) {
     // Instancia a subcamada da aplicação
     Application application(0, 0); // FD e timeout não são usados aqui
 
+    // Chama o método initialize da aplicação para exibir a mensagem inicial
+    application.initialize();
+
     // Conecta as subcamadas: aplicação acima de enquadramento, enquadramento acima de IO
     framing.conecta(&application);
 
@@ -24,7 +29,6 @@ int main(int argc, char *argv[]) {
     Poller sched;
     sched.adiciona(&application);
     sched.adiciona(&framing);
-
     // Executa o protocolo (loop principal)
     sched.despache();
 
