@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "../libs/callback.h"
+#include "frame.h"
 
 using std::vector;
 
@@ -11,8 +12,8 @@ public:
     Subcamada(int fd, long tout);
     ~Subcamada();
     void conecta(Subcamada * acima);
-    virtual void envia(const vector<char> & quadro) = 0;
-    virtual void recebe(const vector<char> & quadro) = 0;
+    virtual void envia(Frame * quadro) = 0;
+    virtual void recebe(Frame * quadro) = 0;
 protected:
     Subcamada * superior, * inferior;
 };

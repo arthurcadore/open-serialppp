@@ -12,15 +12,19 @@ void dump(const std::vector<uint8_t> & buffer, std::ostream & out) {
     }
 }
 
-void Framing::envia(const vector<char>& quadro) {
-    // Calcula o CRC16 e anexa à mensagem
-    vector<char> quadroComCRC = calculateCRC(quadro);
+void Framing::envia(Frame * frame) {
+
+    // Serializa o quadro
+    vector<char> quadro = frame->serialize();
+
+    // Adiciona o CRC ao quadro
+    quadro = addCRC(quadro);
 
     vector<char> framedPacket;
     framedPacket.push_back(FRAME_DELEMITER); // Início do quadro
 
     // Serializa a mensagem, escapando caracteres especiais
-    for (char c : quadroComCRC) {
+    for (char c : quadro) {
         if (c == FRAME_DELEMITER) {
             framedPacket.push_back(ESCAPE_CHARACTER);
             framedPacket.push_back(0x5E); // Escapa 0x7E como 0x7D 0x5E
@@ -37,7 +41,10 @@ void Framing::envia(const vector<char>& quadro) {
     serial.write(framedPacket);
 }
 
-void Framing::recebe(const vector<char>& quadro) {
+void Framing::recebe(Frame * frame) {
+}
+
+void Framing::interpreter(vector<char> & quadro) {
 
     vector<char> receivedPacket;
 
@@ -61,29 +68,41 @@ void Framing::recebe(const vector<char>& quadro) {
         }
     }
 
-    // Remove o CRC16 e verifica a integridade da mensagem
-    vector<char> receivedMessage = removeCRC(receivedPacket);
+    // remove o CRC do quadro
+    receivedPacket = removeCRC(receivedPacket);
+
+    // Cria um novo quadro com os dados recebidos
+    Frame frame(receivedPacket);
 
     // Envia a mensagem para a camada superior (Application)
     if (superior) {
-        superior->recebe(receivedMessage);
+        superior->recebe(&frame);
     }
 }
 
-vector<char> Framing::calculateCRC(const vector<char>& quadro) {
-    // Implementação do cálculo do CRC16 (exemplo simplificado)
-    vector<char> quadroComCRC = quadro;
-    quadroComCRC.push_back(0x00); // CRC byte 1 (simulado)
-    quadroComCRC.push_back(0x00); // CRC byte 2 (simulado)
-    return quadroComCRC;
+
+std::vector<char> addCRC(std::vector<char> & quadro) {
+    // Implementação da adição do CRC16 (exemplo simplificado)
+
+    // Calcula o CRC16
+    auto crc = make_crc16(quadro);
+
+    crc.generate_into(quadro);
+
+    return quadro;
 }
 
-vector<char> Framing::removeCRC(const vector<char>& quadro) {
+std::vector<char> removeCRC(std::vector<char> & quadro) {
     // Implementação da remoção e verificação do CRC16 (exemplo simplificado)
-    if (quadro.size() < 2) {
-        throw std::runtime_error("Invalid frame: too short");
+
+    auto crc = make_crc16(quadro);
+
+    if(crc.check()){
+        quadro.pop_back();
+        quadro.pop_back();
+    } else {
+        throw std::runtime_error("CRC check failed");
     }
 
-    vector<char> quadroSemCRC(quadro.begin(), quadro.end() - 2);
-    return quadroSemCRC;
+    return quadro;
 }

@@ -27,13 +27,16 @@ public:
     Framing(Serial & porta, long tout) : Subcamada(porta.get(), tout), serial(porta){}
 
     // Método para enviar dados (implementação da Subcamada)
-    void envia(const std::vector<char> &quadro) override;
+    void envia(Frame * Frame) override;
 
     // Método para receber dados (implementação da Subcamada)
-    void recebe(const std::vector<char> &quadro) override;
+    void recebe(Frame * Frame) override;
+
 
     // Método chamado em caso de timeout
     void handle_timeout() {}
+
+    void interpreter(vector<char> & quadro);
 
     // Método chamado em caso de dados recebidos
     void handle()
@@ -53,9 +56,9 @@ public:
         // verifica se há um quadro completo
         if (delimiter % 2 == 0)
         {
-            // desenquadra o quadro usando metodo recebe, depois envia para a camada de cima. 
-            recebe(buffer);
-
+            // Desserializa o quadro, desfazendo o escape dos caracteres
+            interpreter(buffer);
+            
             // limpa o buffer
             buffer.clear();
 
@@ -63,13 +66,6 @@ public:
             delimiter = 0;
         }
     }
-
-private:
-    // Calcula o CRC16 e retorna a mensagem com o CRC anexado
-    std::vector<char> calculateCRC(const std::vector<char> &quadro);
-
-    // Remove o CRC16 da mensagem e verifica sua integridade
-    std::vector<char> removeCRC(const std::vector<char> &quadro);
 };
 
 #endif // FRAMING_H

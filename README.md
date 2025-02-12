@@ -12,10 +12,13 @@ TODO
 ```
  ALTERAR O CMAKE
 
-Implementar enquadramento e envio de mensagem entre TX / RX 
-Implementar a aplicação para que o enquandramento a consuma 
-Ambos passos anteriores precisam ser estruturados com poller
-Implementar o CRC-16
+Implementar serializar o quadro 
+calcular CRC em cima do quadro serializado 
+adicionar delimitadores
+enviar quadro
 
-Implementar o controle por subcamada
+receber quadro e verificar CRC
+deserializar quadro
+validar ACK para adicioar o proximo sequence number 
+
 ```
