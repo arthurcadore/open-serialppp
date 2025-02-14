@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include "Subcamada.h"
 #include "frame.h"
+#include <iostream>
 
 enum State {
     OCIOSO,
@@ -40,41 +41,10 @@ public:
   
     }
 
-      void recebe(Frame * frame){
-        switch (estado) {
-            case ESPERA:
-                if (frame->getControlBit() == controlBit::ACK) {
-                    if (frame->getSequenceBit() == this->frameSequence) {
-                        // Remove o quadro confirmado do buffer
-                        this->buffer.erase(this->buffer.begin());
-                        std::cout << "ACK correto recebido!\n";
-                        estado = OCIOSO;  // Volta ao estado inicial
-                    } else {
-                        std::cout << "ACK fora de ordem, ignorado.\n";
-                    }
-                } else { // Recebeu um quadro de dados
-                    Frame ack;
-                    ack.addControlBit(controlBit::ACK);
-                    ack.addSequenceNumber(frame->getSequenceBit());
-
-                    // Envia ACK
-                    inferior->envia(&ack);
-                    // Passa o quadro para a camada superior
-                    superior->recebe(frame);
-                    estado = RECEBIDO;
-                }
-                break;
-
-            case RECEBIDO:
-                // Aguarda próximo quadro
-                estado = OCIOSO;
-                break;
-
-            default:
-                std::cout << "Quadro recebido inesperadamente no estado atual.\n";
-                break;
-        }
+      void recebe(Frame *frame) {
+        fsm(Event(Event::RECEIVED, *frame));
       }
+
 
       void envia(Frame * frame){
         if (estado == OCIOSO) {
@@ -98,16 +68,53 @@ public:
 
 
     void handle_timeout() override {
-        if (estado == ESPERA) {
-            std::cout << "Timeout! Reenviando quadro...\n";
-            if (!buffer.empty()) {
-                inferior->envia(&buffer[0]);
-            }
+        fsm(Event(Event::TIMEOUT, Frame()));
+    }
+
+      void fsm(Event e) {
+        switch (estado) {
+            case OCIOSO:
+                if (e.type == Event::RECEIVED) {
+                    if (e.frame.getControlBit() == controlBit::ACK) {
+                        std::cout << "ACK inesperado, ignorando...\n";
+                    } else {
+                        Frame ack;
+                        ack.addControlBit(controlBit::ACK);
+                        ack.addSequenceNumber(e.frame.getSequenceBit());
+
+                        // Envia ACK
+                        inferior->envia(&ack);
+                        // Passa o quadro para a camada superior
+                        superior->recebe(&e.frame);
+                    }
+                }
+                break;
+
+            case ESPERA:
+                if (e.type == Event::RECEIVED) {
+                    if (e.frame.getControlBit() == controlBit::ACK) {
+                        if (e.frame.getSequenceBit() == this->frameSequence) {
+                            // Remove o quadro confirmado do buffer
+                            this->buffer.erase(this->buffer.begin());
+                            std::cout << "ACK correto recebido!\n";
+                            estado = OCIOSO;
+                        } else {
+                            std::cout << "ACK fora de ordem, ignorado.\n";
+                        }
+                    }
+                } else if (e.type == Event::TIMEOUT) {
+                    std::cout << "Timeout! Reenviando quadro...\n";
+                    if (!buffer.empty()) {
+                        inferior->envia(&buffer[0]);
+                    }
+                }
+                break;
+
+            default:
+                std::cout << "Estado desconhecido.\n";
+                break;
         }
     }
 
 };
-
-
-void fsm(Evento e)
 #endif // IO_H

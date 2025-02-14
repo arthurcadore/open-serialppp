@@ -1,5 +1,31 @@
 #include "framing.h"
 
+std::vector<char> addCRC(std::vector<char> & quadro) {
+    // Implementação da adição do CRC16 (exemplo simplificado)
+
+    // Calcula o CRC16
+    auto crc = make_crc16(quadro);
+
+    crc.generate_into(quadro);
+
+    return quadro;
+}
+
+std::vector<char> removeCRC(std::vector<char> & quadro) {
+    // Implementação da remoção e verificação do CRC16 (exemplo simplificado)
+
+    auto crc = make_crc16(quadro);
+
+    if(crc.check()){
+        quadro.pop_back();
+        quadro.pop_back();
+    } else {
+        throw std::runtime_error("CRC check failed");
+    }
+
+    return quadro;
+}
+
 void dump(const std::vector<uint8_t> & buffer, std::ostream & out) {
     int n = 0;
 
@@ -80,29 +106,3 @@ void Framing::interpreter(vector<char> & quadro) {
     }
 }
 
-
-std::vector<char> addCRC(std::vector<char> & quadro) {
-    // Implementação da adição do CRC16 (exemplo simplificado)
-
-    // Calcula o CRC16
-    auto crc = make_crc16(quadro);
-
-    crc.generate_into(quadro);
-
-    return quadro;
-}
-
-std::vector<char> removeCRC(std::vector<char> & quadro) {
-    // Implementação da remoção e verificação do CRC16 (exemplo simplificado)
-
-    auto crc = make_crc16(quadro);
-
-    if(crc.check()){
-        quadro.pop_back();
-        quadro.pop_back();
-    } else {
-        throw std::runtime_error("CRC check failed");
-    }
-
-    return quadro;
-}

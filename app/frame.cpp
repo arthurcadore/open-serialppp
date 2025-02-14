@@ -44,3 +44,20 @@ std::string Frame::getData() const{
     return std::string(this->data.begin(), this->data.end());
 }
 
+
+
+void Frame::addIdProto(::idProto idProto){
+    this->idProto = idProto;
+}
+
+void Frame::addReserved(::reserved reserved){
+    this->reserved = reserved;
+}
+void Frame::addControlBit(::controlBit controlBit){
+    this->controlBit = controlBit;
+
+}
+void Frame::addSequenceNumber(int sequenceNumber){
+    this->sequenceBit = sequenceNumber;
+}
+
