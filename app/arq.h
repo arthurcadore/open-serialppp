@@ -6,13 +6,23 @@
 #include "Subcamada.h"
 #include "frame.h"
 
-enum state {
+enum State {
     OCIOSO,
     ESPERA,
-    ENVIANDO, 
-    RECEBIDO
 };
 
+class Event {
+    public:
+    enum Type {
+        TIMEOUT,
+        RECEIVED,
+    };
+
+    Type type;
+    Frame frame;
+
+    Event(Type t, Frame f) : type(t), frame(f) {}
+};
 
 // Classe para a camada ARQ (Automatic Repeat reQuest)
 class ARQ : public Subcamada
@@ -20,75 +30,84 @@ class ARQ : public Subcamada
 private:
     std::vector<Frame> buffer;
     bool frameSequence = 0;
+    State estado = OCIOSO;  // Estado inicial
+
     
 public: 
 
     // Construtor
-    ARQ (int fd, long tout) : Subcamada(fd, tout) {}
+    ARQ (int fd, long tout) : Subcamada(fd, tout) {
+  
+    }
 
-      void recebe(const Frame * frame){
+      void recebe(Frame * frame){
+        switch (estado) {
+            case ESPERA:
+                if (frame->getControlBit() == controlBit::ACK) {
+                    if (frame->getSequenceBit() == this->frameSequence) {
+                        // Remove o quadro confirmado do buffer
+                        this->buffer.erase(this->buffer.begin());
+                        std::cout << "ACK correto recebido!\n";
+                        estado = OCIOSO;  // Volta ao estado inicial
+                    } else {
+                        std::cout << "ACK fora de ordem, ignorado.\n";
+                    }
+                } else { // Recebeu um quadro de dados
+                    Frame ack;
+                    ack.addControlBit(controlBit::ACK);
+                    ack.addSequenceNumber(frame->getSequenceBit());
+
+                    // Envia ACK
+                    inferior->envia(&ack);
+                    // Passa o quadro para a camada superior
+                    superior->recebe(frame);
+                    estado = RECEBIDO;
+                }
+                break;
+
+            case RECEBIDO:
+                // Aguarda próximo quadro
+                estado = OCIOSO;
+                break;
+
+            default:
+                std::cout << "Quadro recebido inesperadamente no estado atual.\n";
+                break;
+        }
       }
 
-      void envia(Frame * Frame){
-            // adiciona parâmetros ao quadro
-            // Frame->addSequenceNumber(this->frameSequence);
-            
-            // // invertendo o bit de controle
-            // this->frameSequence = !this->frameSequence;
+      void envia(Frame * frame){
+        if (estado == OCIOSO) {
+            frame->addControlBit(controlBit::DATA);
+            frame->addSequenceNumber(this->frameSequence);
 
-            // adiciona o controle de bit ao quadro
-            Frame->addControlBit(controlBit::DATA);
-
-            // // adiciona o quadro ao buffer
-            // this->buffer.push_back(*Frame);
-
-            // envia o primeiro quadro do buffer
-            if (inferior)
-            {
+            // Adiciona ao buffer e envia
+            buffer.push_back(*frame);
+            if (inferior) {
                 inferior->envia(&this->buffer[0]);
             }
+            estado = ESPERA;
+        } else {
+            std::cout << "Tentativa de envio em estado inválido.\n";
+        }
+      };
 
-      }
+
+    void handle() override {
+    }
 
 
-    void handle() override {}
-
-    void handle_timeout() override {}
+    void handle_timeout() override {
+        if (estado == ESPERA) {
+            std::cout << "Timeout! Reenviando quadro...\n";
+            if (!buffer.empty()) {
+                inferior->envia(&buffer[0]);
+            }
+        }
+    }
 
 };
 
 
-
-            // // verifica se o quadro é um ACK ou DATA
-            // if (frame->getControlBit() == controlBit::ACK)
-            // {
-            //   // verifica se o quadro possui o número de sequência correto
-            //   if (frame->getSequenceBit() == this->frameSequence)
-            //   {
-            //     // remove o quadro do buffer
-            //     this->buffer.erase(this->buffer.begin());
-
-            //     std::cout << "ACK recebido corretamente!" << std::endl;
-            //   }
-            //   // imprime mensagem de erro
-            //   else
-            //   {
-            //     std::cout << "ACK recebido, mas quadro fora de ordem" << std::endl;
-            //   }
-            // } else {
-            //     // Verifica o sequenciamento do quadro recebido
-            //     frame->getSequenceBit();
-            //     // Envia um ACK para o quadro recebido
-            //     Frame ack;
-            //     ack.addControlBit(controlBit::ACK);
-            //     ack.addReserved(reserved::R);
-            //     ack.addSequenceNumber(frame->getSequenceBit());
-
-            //     // Envia o ACK para a camada inferior
-            //     inferior->envia(&ack);
-
-            //     // Envia o quadro para a camada superior
-            //     superior->recebe(&frame);
-            // } 
-
+void fsm(Evento e)
 #endif // IO_H
