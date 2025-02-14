@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <stdexcept>
 
 #define DATA_LENGTH 1024
 #define FRAME_LENGTH 1029
@@ -32,6 +33,9 @@ class Frame {
 
     public:
     // constructors
+
+    Frame(){}
+    
     Frame(const std::string & data){
         // check if data is not empty and is equal or lower than 1024
         if(data.size() >= DATA_LENGTH || data.size() == 0){
@@ -59,18 +63,18 @@ class Frame {
         std::copy(data.begin() + 3, data.end(), std::back_inserter(this->data));
     }
 
-    // void addIdProto(::idProto idProto);
-    // void addControlBit(::controlBit controlBit);
-    // void addReserved(::reserved reserved);
-    // void addSequenceNumber(int sequenceNumber);
+    void addIdProto(::idProto idProto);
+    void addReserved(::reserved reserved);
+    void addControlBit(::controlBit controlBit);
+    void addSequenceNumber(int sequenceNumber);
 
 
     std::vector<char> serialize();
 
-    uint8_t getSequenceBit();
-    uint8_t getControlBit();
-    uint8_t getReserved();
-    uint8_t getIdProto();
+    uint8_t getSequenceBit() const;
+    uint8_t getControlBit() const;
+    uint8_t getReserved() const;
+    uint8_t getIdProto() const;
     std::string getData() const;
 
 };

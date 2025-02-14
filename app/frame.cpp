@@ -24,19 +24,19 @@ std::vector<char> Frame::serialize(){
 }
 
 
-uint8_t Frame::getSequenceBit(){
+uint8_t Frame::getSequenceBit() const{
     return this->sequenceBit;
 }
 
-uint8_t Frame::getControlBit(){
+uint8_t Frame::getControlBit() const{
     return this->controlBit;
 }
 
-uint8_t Frame::getReserved(){
+uint8_t Frame::getReserved()const{
     return this->reserved;
 }
 
-uint8_t Frame::getIdProto(){
+uint8_t Frame::getIdProto() const{
     return this->idProto;
 }
 

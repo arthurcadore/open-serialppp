@@ -49,6 +49,9 @@ public:
         
         frame.addIdProto(idProto::MSG);
 
+        // adiciona reservado ao quadro
+        frame.addReserved(reserved::R);
+
         // Envia os dados para a camada inferior (Framing)
         envia(&frame);
 
