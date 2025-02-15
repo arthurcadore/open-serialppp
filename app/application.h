@@ -34,8 +34,11 @@ public:
     // Método para ler dados do terminal e enviar para a camada inferior
     void handle() override
     {
+        std::cout << "Open-SerialPPP: ";
+
         std::string input;
 
+        std::cout << std::endl;
         // Recebe os dados do terminal
         std::getline(std::cin, input);
 
@@ -55,7 +58,6 @@ public:
         // Envia os dados para a camada inferior (Framing)
         envia(&frame);
 
-        std::cout << "Open-SerialPPP: ";
     }
 
     // Método chamado em caso de timeout (não utilizado aqui)

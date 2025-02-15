@@ -1,6 +1,6 @@
 #include "framing.h"
 
-void dump(const std::vector<char> & buffer, std::ostream & out) {
+void dump(const std::vector<char> buffer, std::ostream & out) {
     int n = 0;
 
     out << std::hex << std::setprecision(2);
@@ -10,6 +10,8 @@ void dump(const std::vector<char> & buffer, std::ostream & out) {
         n++;
         if ((n % 20) == 0) out << std::endl;
     }
+
+    out << std::endl;
 }
 
 std::vector<char> addCRC(std::vector<char> & quadro) {
@@ -32,15 +34,11 @@ std::vector<char> removeCRC(std::vector<char> & quadro) {
         quadro.pop_back();
         quadro.pop_back();
     } else {
-        std:: cout << "CRC check failed" << std::endl;
         quadro.pop_back();
         quadro.pop_back();
-
-        // dump(quadro, std::cout);
-        // throw std::runtime_error("CRC check failed");
     }
-        // remove o delimitador do quadro
-       quadro.pop_back();
+    // remove o delimitador do quadro
+    quadro.pop_back();
 
     return quadro;
 }
@@ -51,8 +49,17 @@ void Framing::envia(Frame * frame) {
     // Serializa o quadro
     vector<char> quadro = frame->serialize();
 
+    std::cout << "Sem CRC: "; 
+    dump(quadro, std::cout);
+
     // Adiciona o CRC ao quadro
     quadro = addCRC(quadro);
+
+
+    std::cout << "Com CRC: ";
+    dump(quadro, std::cout);
+    std::cout << std::endl;
+
 
     vector<char> framedPacket;
     framedPacket.push_back(FRAME_DELEMITER); // Início do quadro
@@ -71,6 +78,7 @@ void Framing::envia(Frame * frame) {
     }
 
     framedPacket.push_back(FRAME_DELEMITER); // Fim do quadro
+
 
     serial.write(framedPacket);
 }
