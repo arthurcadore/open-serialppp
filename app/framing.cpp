@@ -25,7 +25,7 @@ std::vector<char> addCRC(std::vector<char> & quadro) {
     return quadro;
 }
 
-std::vector<char> removeCRC(std::vector<char> & quadro) {
+bool removeCRC(std::vector<char> & quadro) {
     // Implementação da remoção e verificação do CRC16 (exemplo simplificado)
 
     auto crc = make_crc16(quadro);
@@ -33,14 +33,9 @@ std::vector<char> removeCRC(std::vector<char> & quadro) {
     if(crc.check()){
         quadro.pop_back();
         quadro.pop_back();
-    } else {
-        quadro.pop_back();
-        quadro.pop_back();
-    }
-    // remove o delimitador do quadro
-    quadro.pop_back();
-
-    return quadro;
+        return true;
+    } 
+    return false;
 }
 
 
@@ -58,7 +53,6 @@ void Framing::envia(Frame * frame) {
 
     std::cout << "Com CRC: ";
     dump(quadro, std::cout);
-    std::cout << std::endl;
 
 
     vector<char> framedPacket;
@@ -79,7 +73,10 @@ void Framing::envia(Frame * frame) {
 
     framedPacket.push_back(FRAME_DELEMITER); // Fim do quadro
 
-
+    std::cout << "Com Frame: ";
+    dump(framedPacket, std::cout);
+    std::cout << std::endl;
+    
     serial.write(framedPacket);
 }
 
@@ -87,6 +84,9 @@ void Framing::recebe(Frame * frame) {
 }
 
 void Framing::interpreter(vector<char> & quadro) {
+
+    std::cout << "Frame Recebido: ";
+    dump(quadro, std::cout);
 
     vector<char> receivedPacket;
 
@@ -109,9 +109,22 @@ void Framing::interpreter(vector<char> & quadro) {
             receivedPacket.push_back(quadro[i]);
         }
     }
+    // remove o delimitador do quadro
+    receivedPacket.pop_back();
 
-    // remove o CRC do quadro
-    receivedPacket = removeCRC(receivedPacket);
+
+    std::cout << "Recebido C-CRC: ";
+    dump(receivedPacket, std::cout);
+    
+    // tenta remover o CRC, se não conseguir, descarta o quadro
+    if(!removeCRC(receivedPacket)){
+        std::cout << "CRC inválido, descartando quadro\n";
+        return;
+    }
+
+    std::cout << "Recebido S-CRC: ";
+    dump(receivedPacket, std::cout);
+    std::cout << std::endl;
 
     // Cria um novo quadro com os dados recebidos
     Frame frame(receivedPacket);
