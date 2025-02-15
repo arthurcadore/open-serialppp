@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     // Cria o poller e registra as subcamadas
     Poller sched;
     sched.adiciona(&application);
-    sched.adiciona(&arq);
+    // sched.adiciona(&arq);
     sched.adiciona(&framing);
     
     // Executa o protocolo (loop principal)

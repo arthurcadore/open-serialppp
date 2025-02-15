@@ -1,5 +1,17 @@
 #include "framing.h"
 
+void dump(const std::vector<char> & buffer, std::ostream & out) {
+    int n = 0;
+
+    out << std::hex << std::setprecision(2);
+    for (auto & c: buffer) {
+        int x = (unsigned char)c;
+        out << x << " ";
+        n++;
+        if ((n % 20) == 0) out << std::endl;
+    }
+}
+
 std::vector<char> addCRC(std::vector<char> & quadro) {
     // Implementação da adição do CRC16 (exemplo simplificado)
 
@@ -20,23 +32,19 @@ std::vector<char> removeCRC(std::vector<char> & quadro) {
         quadro.pop_back();
         quadro.pop_back();
     } else {
-        throw std::runtime_error("CRC check failed");
+        std:: cout << "CRC check failed" << std::endl;
+        quadro.pop_back();
+        quadro.pop_back();
+
+        // dump(quadro, std::cout);
+        // throw std::runtime_error("CRC check failed");
     }
+        // remove o delimitador do quadro
+       quadro.pop_back();
 
     return quadro;
 }
 
-void dump(const std::vector<uint8_t> & buffer, std::ostream & out) {
-    int n = 0;
-
-    out << std::hex << std::setprecision(2);
-    for (auto & c: buffer) {
-        int x = (unsigned char)c;
-        out << x << " ";
-        n++;
-        if ((n % 20) == 0) out << std::endl;
-    }
-}
 
 void Framing::envia(Frame * frame) {
 

@@ -58,7 +58,8 @@ public:
             }
             estado = ESPERA;
         } else {
-            std::cout << "Tentativa de envio em estado inválido.\n";
+             buffer.push_back(*frame);
+            std::cout << "Mensagem enfilerada\n";
         }
       };
 

@@ -38,7 +38,7 @@ class Frame {
     
     Frame(const std::string & data){
         // check if data is not empty and is equal or lower than 1024
-        if(data.size() >= DATA_LENGTH || data.size() == 0){
+        if(data.size() >= DATA_LENGTH){
             throw std::invalid_argument("Data size is invalid");
         }
         this->data = std::vector<char>(data.begin(), data.end());
