@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     // Instancia a subcamada da aplicação
     Application application(0, 0); // FD e timeout não são usados aqui
 
-    ARQ arq(0, 0); // FD e timeout não são usados aqui
+    ARQ arq(1000); // FD e timeout não são usados aqui
 
     // Instancia a subcamada do enquadramento
     Framing framing(porta, 0); // FD e timeout não são usados aqui
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     // Cria o poller e registra as subcamadas
     Poller sched;
     sched.adiciona(&application);
-    // sched.adiciona(&arq);
+    sched.adiciona(&arq);
     sched.adiciona(&framing);
     
     // Executa o protocolo (loop principal)

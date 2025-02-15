@@ -5,6 +5,10 @@ Subcamada::Subcamada(int fd, long tout) : Callback(fd, tout), superior(nullptr),
 
 }
 
+Subcamada::Subcamada(long tout) : Callback(tout), superior(nullptr), inferior(nullptr) {
+
+}
+
 void Subcamada::conecta(Subcamada *acima) {
     if (acima == nullptr) throw std::runtime_error("camada superior não pode ser nullptr !");
     superior = acima;

@@ -37,8 +37,8 @@ private:
 public: 
 
     // Construtor
-    ARQ (int fd, long tout) : Subcamada(fd, tout) {
-  
+    ARQ (long tout) : Subcamada(tout) {
+        this->enable_timeout();
     }
 
       void recebe(Frame *frame) {
