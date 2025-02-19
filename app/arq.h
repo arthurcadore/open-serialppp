@@ -30,7 +30,8 @@ class ARQ : public Subcamada
 {
 private:
     std::vector<Frame> buffer;
-    bool frameSequence = 0;
+    bool frameSequenceTx = 0;
+    bool frameSequenceRx = 0;
     State estado = OCIOSO;  // Estado inicial
     int timeoutCount = 0;
 
@@ -48,7 +49,7 @@ public:
       void envia(Frame * frame){
         if (estado == OCIOSO) {
             frame->addControlBit(controlBit::DATA);
-            frame->addSequenceNumber(this->frameSequence);
+            frame->addSequenceNumber(this->frameSequenceTx);
 
             // Adiciona ao buffer e envia
             buffer.push_back(*frame);
@@ -78,6 +79,7 @@ public:
                     if (e.frame.getControlBit() == controlBit::ACK) {
                         std::cout << "ACK inesperado, ignorando...\n";
                     } else {
+                        frameSequenceRx = !frameSequenceRx;
                         Frame ack;
                         ack.addControlBit(controlBit::ACK);
                         ack.addSequenceNumber(e.frame.getSequenceBit());
@@ -93,11 +95,11 @@ public:
             case ESPERA:
                 if (e.type == Event::RECEIVED) {
                     if (e.frame.getControlBit() == controlBit::ACK) {
-                        if (e.frame.getSequenceBit() == this->frameSequence) {
+                        if (e.frame.getSequenceBit() == this->frameSequenceTx) {
                             // Remove o quadro confirmado do buffer
                             this->buffer.erase(this->buffer.begin());
                             std::cout << "ACK correto recebido!\n";
-                            frameSequence = !frameSequence;
+                            frameSequenceTx = !frameSequenceTx;
                             estado = OCIOSO;
                         } else {
                             std::cout << "ACK fora de ordem, ignorado.\n";
@@ -109,7 +111,8 @@ public:
                     if (timeoutCount > 3) {
                         std::cout << "Timeout máximo atingido. Desistindo...\n";
                         buffer.clear();
-                        frameSequence = 0;
+                        frameSequenceTx = 0;
+                        frameSequenceRx = 0;
                         timeoutCount = 0;
                         estado = OCIOSO;
                         return;
