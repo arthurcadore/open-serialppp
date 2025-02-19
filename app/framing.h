@@ -24,7 +24,9 @@ private:
 
 public:
     // Construtor
-    Framing(Serial & porta, long tout) : Subcamada(porta.get(), tout), serial(porta){}
+    Framing(Serial & porta, long tout) : Subcamada(porta.get(), tout), serial(porta){
+        disable_timeout();  
+    }
 
     // Método para enviar dados (implementação da Subcamada)
     void envia(Frame * Frame) override;

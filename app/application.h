@@ -12,7 +12,9 @@ class Application : public Subcamada
 {
 public:
     // Construtor
-    Application(int fd, long tout) : Subcamada(fd, tout) {}
+    Application(int fd, long tout) : Subcamada(fd, tout) {
+        disable_timeout();
+    }
 
     // Método para enviar dados (implementação da Subcamada)
     void envia(Frame * Frame) override

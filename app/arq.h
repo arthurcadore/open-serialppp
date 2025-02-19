@@ -39,6 +39,8 @@ public:
 
     // Construtor
     ARQ (long tout) : Subcamada(tout) {
+        disable_timeout();  
+
     }
 
       void recebe(Frame *frame) {
@@ -57,6 +59,7 @@ public:
                 inferior->envia(&this->buffer[0]);
             }
             estado = ESPERA;
+            enable_timeout();
         } else {
              buffer.push_back(*frame);
             std::cout << "Mensagem enfilerada\n";
@@ -101,6 +104,8 @@ public:
                             std::cout << "ACK correto recebido!\n";
                             frameSequenceTx = !frameSequenceTx;
                             estado = OCIOSO;
+                            reload_timeout();
+                            disable_timeout();
                         } else {
                             std::cout << "ACK fora de ordem, ignorado.\n";
                         }

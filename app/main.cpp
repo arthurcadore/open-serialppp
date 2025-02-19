@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     // Instancia a subcamada da aplicação
     Application application(0, 0); // FD e timeout não são usados aqui
 
-    ARQ arq(1); // FD e timeout não são usados aqui
+    ARQ arq(1000); // FD e timeout não são usados aqui
 
     // Instancia a subcamada do enquadramento
     Framing framing(porta, 0); // FD e timeout não são usados aqui
