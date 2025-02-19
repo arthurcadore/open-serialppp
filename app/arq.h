@@ -32,8 +32,8 @@ private:
     std::vector<Frame> buffer;
     bool frameSequence = 0;
     State estado = OCIOSO;  // Estado inicial
+    int timeoutCount = 0;
 
-    
 public: 
 
     // Construtor
@@ -103,6 +103,17 @@ public:
                         }
                     }
                 } else if (e.type == Event::TIMEOUT) {
+                    timeoutCount++;
+
+                    if (timeoutCount > 3) {
+                        std::cout << "Timeout máximo atingido. Desistindo...\n";
+                        buffer.clear();
+                        frameSequence = 0;
+                        timeoutCount = 0;
+                        estado = OCIOSO;
+                        return;
+                    }
+
                     std::cout << "Timeout! Reenviando quadro...\n";
                     if (!buffer.empty()) {
                         inferior->envia(&buffer[0]);
