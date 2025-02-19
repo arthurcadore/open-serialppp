@@ -97,6 +97,7 @@ public:
                             // Remove o quadro confirmado do buffer
                             this->buffer.erase(this->buffer.begin());
                             std::cout << "ACK correto recebido!\n";
+                            frameSequence = !frameSequence;
                             estado = OCIOSO;
                         } else {
                             std::cout << "ACK fora de ordem, ignorado.\n";
