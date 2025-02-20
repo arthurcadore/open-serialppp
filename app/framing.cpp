@@ -80,43 +80,72 @@ void Framing::envia(Frame * frame) {
     serial.write(framedPacket);
 }
 
-void Framing::recebe(Frame * frame) {
+void Framing::handle() {
+    char receivedData = serial.read_byte();
+    
+    fsm(FramingEvent(FramingEvent::BYTE_RECEIVED, receivedData));
 }
 
-void Framing::interpreter(vector<char> & quadro) {
+void Framing::fsm(FramingEvent e) {
+    switch (estado) {
+        case WAITING:
+            if (e.data == FRAME_DELEMITER) {
+                buffer.clear();
+                frame_started = true;
+                estado = RECEIVING;
+            }
+            break;
 
+        case RECEIVING:
+            if (e.data == ESCAPE_CHARACTER && !escaping) {
+                escaping = true; // Próximo byte é escapado
+            } else if (e.data == FRAME_DELEMITER && !escaping) {
+                // Delimitador final não escapado: fim do quadro
+                interpreter(buffer);
+                buffer.clear();
+                frame_started = false;
+                estado = WAITING;
+            } else {
+                if (escaping) {
+                    // Processa byte escapado
+                    if (e.data == 0x5E) {
+                        buffer.push_back(FRAME_DELEMITER);
+                    } else if (e.data == 0x5D) {
+                        buffer.push_back(ESCAPE_CHARACTER);
+                    } else {
+                        buffer.clear();
+                        estado = WAITING;
+                        throw std::runtime_error("Caractere escapado inválido");
+                    }
+                    escaping = false;
+                } else {
+                    buffer.push_back(e.data); // Byte normal
+                }
+            }
+            break;
+    }
+}
+void Framing::handle_timeout() {
+    buffer.clear();
+    estado = WAITING; // Reset em caso de timeout
+    std::cout << "Timeout: Buffer limpo\n";
+}
+
+void Framing::recebe(Frame * frame) {
+
+}
+
+void Framing::interpreter(std::vector<char> & quadro) {
     std::cout << "Frame Recebido: ";
     dump(quadro, std::cout);
 
-    vector<char> receivedPacket;
-
-    // Desserializa o quadro, desfazendo o escape dos caracteres
-    for (size_t i = 1; i < quadro.size(); i++) {
-        if (quadro[i] == ESCAPE_CHARACTER) {
-            i++; // Pula o caractere de escape
-            if (i >= quadro.size()) {
-                throw std::runtime_error("Invalid escape sequence");
-            }
-
-            if (quadro[i] == 0x5E) {
-                receivedPacket.push_back(FRAME_DELEMITER);
-            } else if (quadro[i] == 0x5D) {
-                receivedPacket.push_back(ESCAPE_CHARACTER);
-            } else {
-                throw std::runtime_error("Invalid escape sequence");
-            }
-        } else {
-            receivedPacket.push_back(quadro[i]);
-        }
-    }
-    // remove o delimitador do quadro
-    receivedPacket.pop_back();
-
+    // Usa o quadro inteiro, pois a FSM já removeu os delimitadores
+    std::vector<char> receivedPacket = quadro;
 
     std::cout << "Recebido C-CRC: ";
     dump(receivedPacket, std::cout);
     
-    // tenta remover o CRC, se não conseguir, descarta o quadro
+    // Tenta remover o CRC; se não conseguir, descarta o quadro
     if(!removeCRC(receivedPacket)){
         std::cout << "CRC inválido, descartando quadro\n";
         return;
@@ -134,4 +163,5 @@ void Framing::interpreter(vector<char> & quadro) {
         superior->recebe(&frame);
     }
 }
+
 

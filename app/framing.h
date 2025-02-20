@@ -10,64 +10,50 @@
 #include "../libs/crc16.h"
 #include "../libs/serial.h"
 
-// Define os caracteres usados para o framing
 #define FRAME_DELEMITER 0x7E
 #define ESCAPE_CHARACTER 0x7D
 
-// Classe para a camada Framing
-class Framing : public Subcamada
-{
+// Estados da FSM
+enum FramingState {
+    WAITING,    // Aguardando início do quadro
+    RECEIVING   // Recebendo dados (trata escapes internamente)
+};
+
+// Eventos da FSM
+class FramingEvent {
+public:
+    enum Type {
+        BYTE_RECEIVED,  // Novo byte recebido
+        TIMEOUT         // Timeout (opcional)
+    };
+
+    Type type;
+    char data;  // Byte recebido
+
+    FramingEvent(Type t, char d) : type(t), data(d) {}
+};
+
+class Framing : public Subcamada {
 private: 
     Serial & serial;
-    vector<char> buffer;
-    int delimiter = 0;
+    std::vector<char> buffer;
+    FramingState estado; // Estado atual
+    bool escaping = false; // Adicione esta flag
+    bool frame_started = false; // Indica se o quadro começou
+
+    void fsm(FramingEvent e); // Máquina de estados
 
 public:
-    // Construtor
-    Framing(Serial & porta, long tout) : Subcamada(porta.get(), tout), serial(porta){
+    Framing(Serial & porta, long tout) 
+        : Subcamada(porta.get(), tout), serial(porta), estado(WAITING) {
         disable_timeout();  
     }
 
-    // Método para enviar dados (implementação da Subcamada)
-    void envia(Frame * Frame) override;
-
-    // Método para receber dados (implementação da Subcamada)
-    void recebe(Frame * Frame) override;
-
-
-    // Método chamado em caso de timeout
-    void handle_timeout() {}
-
-    void interpreter(vector<char> & quadro);
-
-    // Método chamado em caso de dados recebidos
-    void handle()
-    {
-        // Lê dados da porta serial
-        char receivedData = serial.read_byte();
-
-        // adiciona ao buffer
-        buffer.push_back(receivedData);
-
-        // verifica se é um escape, se for, incrementa o contador
-        if (receivedData == FRAME_DELEMITER)
-        {
-            delimiter++;
-        }
-
-        // verifica se há um quadro completo
-        if (delimiter % 2 == 0)
-        {
-            // Desserializa o quadro, desfazendo o escape dos caracteres
-            interpreter(buffer);
-            
-            // limpa o buffer
-            buffer.clear();
-
-            // reseta o contador
-            delimiter = 0;
-        }
-    }
+    void envia(Frame * frame) override;
+    void recebe(Frame * frame) override;
+    void handle_timeout() override;
+    void interpreter(std::vector<char> & quadro);
+    void handle() override;
 };
 
 #endif // FRAMING_H
